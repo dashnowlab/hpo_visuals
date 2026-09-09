@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-## Importing STRchive-loci.json Data and Accessing 
+## Importing STRchive-loci.json Data and Accessing HPO Terms
 
 Going to read STRchive data from GitHub into R using the `fromJSON()` function from the `jsonlite` package. Then will view the data using the `View()` function and access the nested HPO terms from the data using the `$` command.
 
@@ -114,7 +114,6 @@ loci <- fromJSON(url)
 
 # Consolidate and unnest hpo_terms
 hpo_terms <- loci |> select(c(disease_id, hpo_terms))
-
 unnested_hpo_terms <- hpo_terms |> unnest_longer(hpo_terms) |> relocate(hpo_terms)
 
 # Visualize all hpo_terms vs. frequency as a bar plot
@@ -122,5 +121,5 @@ unnested_hpo_terms |> ggplot(aes(x = hpo_terms)) + geom_bar(colour = "lightgreen
 
 # Visualize hpo_terms with a frequency of 13+ across diseases
 most_frequent_hpo <- unnested_hpo_terms |> count(hpo_terms, sort = T) |> filter(n >= 13)
-ggplot(most_frequent_hpo, aes(x = fct_infreq(hpo_terms, (n)), y = n)) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "HPO Term", y = "Frequency")
+ggplot(most_frequent_hpo, aes(x = n, y = fct_infreq(hpo_terms, (n)))) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "HPO Term", y = "Frequency")
 ```
