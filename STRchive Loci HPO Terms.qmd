@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-## Importing STRchive-loci.json Data and Accessing HPO Terms
+## Importing STRchive-loci.json Data and Accessing 
 
 Going to read STRchive data from GitHub into R using the `fromJSON()` function from the `jsonlite` package. Then will view the data using the `View()` function and access the nested HPO terms from the data using the `$` command.
 
