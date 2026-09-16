@@ -122,16 +122,18 @@ most_frequent_hpo <- unnested_hpo_terms |> count(hpo_terms, sort = T) |> filter(
 ggplot(most_frequent_hpo, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
 
 ## FINAL FREQUENCY PLOT
-# Visualize hpo_terms with a frequency of 13+ across diseases and with "Ataxia" types consolidated
+# Visualize hpo_terms with a frequency of 13+ across diseases and with "Ataxia" types consolidated (Based on "children" using `ontologyIndex` package with `data(hpo)`
 hpo_frequency <- unnested_hpo_terms |> mutate(
   hpo_terms = fct_recode(hpo_terms,
   "HP:0001251 Ataxia" = "HP:0001251 Ataxia",
+  "HP:0001251 Ataxia" = "HP:0001310 Dysmetria",
   "HP:0001251 Ataxia" = "HP:0002066 Gait ataxia",
   "HP:0001251 Ataxia" = "HP:0002070 Limb ataxia",
   "HP:0001251 Ataxia" = "HP:0002073 Progressive cerebellar ataxia",
+  "HP:0001251 Ataxia" = "HP:0002075 Dysdiadochokinesis",
   "HP:0001251 Ataxia" = "HP:0002078 Truncal ataxia",
+  "HP:0001251 Ataxia" = "HP:0010867 Dyssynergia",
   "HP:0001251 Ataxia" = "HP:0002070 Limb Ataxia",
-  "HP:0001251 Ataxia" = "HP:0003434 Sensory ataxic neuropathy"
   )) |> count(hpo_terms, sort = T) |> filter (n >= 13)
 ggplot(hpo_frequency, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
 
