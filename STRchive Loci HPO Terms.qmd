@@ -105,8 +105,6 @@ Different visualizations of hpo_terms using different `ggplot` functions form th
 # Load packages
 library(jsonlite)
 library(tidyverse)
-library(ggplot2)
-library(forcats)
 
 # Read data from url into "loci" object
 url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
@@ -122,9 +120,24 @@ unnested_hpo_terms |> ggplot(aes(x = hpo_terms)) + geom_bar(colour = "lightgreen
 # Visualize hpo_terms with a frequency of 13+ across diseases
 most_frequent_hpo <- unnested_hpo_terms |> count(hpo_terms, sort = T) |> filter(n >= 13)
 ggplot(most_frequent_hpo, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
+
+## FINAL FREQUENCY PLOT
+# Visualize hpo_terms with a frequency of 13+ across diseases and with "Ataxia" types consolidated
+hpo_frequency <- unnested_hpo_terms |> mutate(
+  hpo_terms = fct_recode(hpo_terms,
+  "HP:0001251 Ataxia" = "HP:0001251 Ataxia",
+  "HP:0001251 Ataxia" = "HP:0002066 Gait ataxia",
+  "HP:0001251 Ataxia" = "HP:0002070 Limb ataxia",
+  "HP:0001251 Ataxia" = "HP:0002073 Progressive cerebellar ataxia",
+  "HP:0001251 Ataxia" = "HP:0002078 Truncal ataxia",
+  "HP:0001251 Ataxia" = "HP:0002070 Limb Ataxia",
+  "HP:0001251 Ataxia" = "HP:0003434 Sensory ataxic neuropathy"
+  )) |> count(hpo_terms, sort = T) |> filter (n >= 13)
+ggplot(hpo_frequency, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
+
 ```
 
-## Visualizing STR motifs
+## Visualizing STR motifs (incomplete)
 
 Visualizations of pathogenic_motif_reference_orientation using `ggplot2` functions
 
@@ -139,6 +152,10 @@ library(tidyverse)
 # Read data from url into "loci" object
 url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
 loci <- fromJSON(url)
+
+# Select relevant data for heat map visualization
+hpo_hm_data <- loci |> select(hpo_terms, disease_id, pathogenic_motif_reference_orientation)
+view(hpo_hm_data)
 
 # Select the most frequent motifs in "pathogenic_motif_reference_orientation" data column (based on frequency across disease_id)
 most_frequent_motifs <- loci |> select(pathogenic_motif_reference_orientation, disease_id) |> count(pathogenic_motif_reference_orientation, sort = T)
