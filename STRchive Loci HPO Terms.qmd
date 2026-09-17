@@ -105,6 +105,7 @@ Different visualizations of hpo_terms using different `ggplot` functions form th
 # Load packages
 library(jsonlite)
 library(tidyverse)
+library(ontologyIndex)
 
 # Read data from url into "loci" object
 url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"

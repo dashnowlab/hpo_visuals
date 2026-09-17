@@ -6,7 +6,7 @@
 library(ontologyIndex)
 data(hpo)
 
-# Using the `get_term_property()` function to quey the hpo `ontology_index` object and retrieve a particular attribute for a single term
+# Using the `get_term_property()` function to query the hpo `ontology_index` object and retrieve a particular attribute for a single term
 get_term_property(ontology = hpo, property = "ancestors", term = "HP:0001873", as_names = T)
 
 # Look up properties for a given term using "[" and "[["
