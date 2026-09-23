@@ -122,8 +122,7 @@ unnested_hpo_terms |> ggplot(aes(x = hpo_terms)) + geom_bar(colour = "lightgreen
 most_frequent_hpo <- unnested_hpo_terms |> count(hpo_terms, sort = T) |> filter(n >= 13)
 ggplot(most_frequent_hpo, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
 
-## FINAL HPO FREQUENCY PLOT
-# Visualize hpo_terms with a frequency of 13+ across diseases and with "Ataxia" types consolidated (Based on "children" using `ontologyIndex` package with `data(hpo)`
+# Visualize hpo_terms with a frequency of 13+ across diseases and with "Ataxia" types consolidated (Based on "children", or `get_descendants()` using `ontologyIndex` package with `data(hpo)`
 hpo_frequency <- unnested_hpo_terms |> mutate(
   hpo_terms = fct_recode(hpo_terms,
   "HP:0001251 Ataxia" = "HP:0001251 Ataxia",
@@ -138,7 +137,132 @@ hpo_frequency <- unnested_hpo_terms |> mutate(
   )) |> count(hpo_terms, sort = T) |> filter (n >= 13)
 ggplot(hpo_frequency, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
 
+## FINAL HPO FREQUENCY PLOT
+# Made using `fct_collapse()` function and manual matching with "children" from `ontologyIndex` data(hpo)
+hpo_frequency <- unnested_hpo_terms |> mutate(
+  hpo_terms = fct_collapse(hpo_terms,
+  "HP:0001251 Ataxia" = c("HP:0001251 Ataxia", "HP:0001310 Dysmetria", "HP:0002066 Gait ataxia", "HP:0002070 Limb ataxia", "HP:0002073 Progressive cerebellar ataxia", "HP:0002075 Dysdiadochokinesis", "HP:0002078 Truncal ataxia", "HP:0010867 Dyssynergia", "HP:0002070 Limb Ataxia"),
+  "HP:0001288 Gait disturbance" = c("HP:0001288 Gait disturbance", "HP:0002136 Broad-based gait", "HP:0002141 Gait imbalance", "HP:0002317 Unsteady gait", "HP:0002362 Shuffling gait", "HP:0002515 Waddling gait", "HP:0002527 Falls", "HP:0002540 Inability to walk", "HP:0003376 Steppage gait", "HP:0030051 Tip-toe gait", "HP:0031629 Impaired tandem gait"),
+  "HP:0001260 Dysarthria" = c("HP:0001260 Dysarthria", "HP:0002464 Spastic dysarthria", "HP:0007024 Pseudobulbar paralysis", "HP:0008376 Nasal dysarthria"),
+  "HP:0002015 Dysphagia" = c("HP:0002015 Dysphagia", "HP:0007024 Pseudobulbar paralysis", "HP:0031162 Impaired oropharyngeal swallow response", "HP:0200136 Oral-pharyngeal dysphagia"),
+  "HP:0000639 Nystagmus" = c("HP:0000639 Nystagmus", "HP:0000640 Gaze-evoked nystagmus", "HP:0000666 Horizontal nystagmus", "HP:0010542 Vestibular nystagmus", "HP:0010544 Vertical nystagmus"),
+  "HP:0001272 Cerebellar atrophy" = c("HP:0001272 Cerebellar atrophy", "HP:0006855 Cerebellar vermis atrophy", "HP:0007263 Spinocerebellar atrophy", "HP:0012082 Cerebellar Purkinje layer atrophy", "HP:0100275 Diffuse cerebellar atrophy"),
+  "HP:0001249 Intellectual disability" = c("HP:0001249 Intellectual disability", "HP:0001256 Mild intellectual disability", "HP:0002342 Moderate intellectual disability", "HP:0006889 Borderline intellectual disability", "HP:0010864 Severe intellectual disability"),
+  "HP:0001337 Tremor" = c("HP:0001337 Tremor", "HP:0002322 Resting tremor", "HP:0002345 Action tremor", "HP:0030188 Tremor by anatomical site"),
+  "HP:0001250 Seizure" = c("HP:0001250 Seizure", "HP:0002069 Bilateral tonic-clonic seizure", "HP:0002133 Status epilepticus"),
+  "HP:0001347 Hyperreflexia" = c("HP:0001347 Hyperreflexia", "HP:0001348 Brisk reflexes", "HP:0002169 Clonus", "HP:0006801 Hyperactive deep tendon reflexes"),
+  "HP:0000726 Dementia" = c("HP:0000726 Dementia", "HP:0000727 Frontal lobe dementia", "HP:0002145 Frontotemporal dementia", "HP:0007123 Subcortical dementia"),
+  "HP:0001265 Hyporeflexia" = ("HP:0001265 Hyporeflexia"),
+  "HP:0002067 Bradykinesia" = ("HP:0002067 Bradykinesia"),
+  "HP:0003487 Babinski sign" = ("HP:0003487 Babinski sign")
+  )) |> count(hpo_terms, sort = T) |> filter (n >= 13)
+
+ggplot(hpo_frequency, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) + geom_col(fill = "lightblue") + labs(title = "Most Frequent HPOs", subtitle = "Phenotypes with a frequency of 13+ across STR diseases", x = "Frequency", y = "HPO Term")
+
 ```
+
+## Heatmapping with ontologyX Package Data
+
+Using `onotologySimilarity` and `ontologyIndex` functions to create similarity matrices and distance clusters to then be visualized with `pheatmap`
+
+```{r}
+#| label: Similarity matrices, cluster dendrograms, and heat maps of HPO data
+
+
+# Load packages and similarity matrix setup
+library(pheatmap)
+library(ontologyIndex)
+library(ontologySimilarity)
+data(hpo)
+set.seed(1)
+information_content <- descendants_IC(hpo)
+
+# Create similarity matrix
+  # First generate terms
+  term_sets <- list(
+  Ataxia = get_descendants(hpo, "HP:0001251"),
+  Gait_Ataxia = get_descendants(hpo, "HP:0002066"),
+  Gait_Disturbance = get_descendants(hpo, "HP:0001288"),
+  Seizure = get_descendants(hpo, "HP:0001250")
+  )
+  # Next, calculate simialrity matrix
+  sim_mat <- get_sim_grid(ontology = hpo, term_sets = term_sets)
+  sim_mat
+  # Convert to distance matrix (cluster dendrogram), which is necessary to visualize as   heat map 
+  dist_mat <- max(sim_mat) - sim_mat
+  plot(hclust(as.dist(dist_mat)))
+  # Visualize as heatmap
+   hclust_obj <- hclust(as.dist(dist_mat))
+   pheatmap(sim_mat,
+           cluster_rows = hclust_obj,
+           cluster_cols = hclust_obj,
+           show_rownames = TRUE,
+           show_colnames = TRUE)
+   
+## BIG HEATMAP
+  # Manually input uncollapsed hpo_freq terms
+  library(ontologyIndex)
+  library(ontologySimilarity)
+  data(hpo)
+  set.seed(50)
+  information_content <- descendants_IC(hpo)
+# First, similarity matrix of individual terms  
+  # Generate terms
+  term_sets <- list(
+    Dysarthria = "HP:0001260",
+    Ataxia = "HP:0001251",
+    Dysphagia = "HP:0002015",
+    Cerebellar_Atrophy = "HP:0001272",
+    Gait_Disturbance = "HP:0001288",
+    Nystagmus = "HP:0000639",
+    Intellectual_Disability = "HP:0001249",
+    Tremor = "HP:0001337",
+    Dementia = "HP:0000726",
+    Seizure = "HP:0001250",
+    Hyporeflexia = "HP:0001265",
+    Hyperreflexia = "HP:0001347",
+    Gait_Ataxia = "HP:0002066",
+    Limb_Ataxia = "HP:0002070",
+    Bradykinesia = "HP:0002067",
+    Babinski_Sign = "HP:0003487",
+    Progressive_Cerebellar_Ataxia = "HP:0002073",
+    Depression = "HP:0000716",
+    Hypotonia = "HP:0001252",
+    Global_Developmental_Delay = "HP:0001263",
+    Dysmetria = "HP:0001310",
+    Muscle_Weakness = "HP:0001324",
+    Dystonia = "HP:0001332",
+    Myoclonus = "HP:0001336",
+    Ptosis = "HP:0000508",
+    Rigidity = "HP:0002063",
+    Distal_Muscle_Weakness = "HP:0002460",
+    Skeletal_Muscle_Atrophy = "HP:0003202",
+    Spasticity = "HP:0001257",
+    Parkinsonism = "HP:0001300"
+  )
+  # Similarity matrix
+  sim_mat <- get_sim_grid(ontology = hpo, term_sets = term_sets)
+  sim_mat
+  # Cluster dendrogram
+  dist_mat <- max(sim_mat) - sim_mat
+  plot(hclust(as.dist(dist_mat)))
+  # Heat map
+  hclust_obj <- hclust(as.dist(dist_mat))
+  pheatmap(sim_mat,
+           cluster_rows = hclust_obj,
+           cluster_cols = hclust_obj,
+           show_rownames = TRUE,
+           show_colnames = TRUE,
+           fontsize = 6.5
+           )
+```
+
+
+
+
+
+
+
 
 ## Visualizing STR motifs (incomplete)
 
