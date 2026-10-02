@@ -161,7 +161,7 @@ ggplot(hpo_frequency, aes(x = n, y = fct_infreq(hpo_terms, (n)) |> fct_rev())) +
 
 ```
 
-## Heatmapping with ontologyX Package Data
+## Heatmapping HPO Terms with ontologyX Package Data
 
 Using `onotologySimilarity` and `ontologyIndex` functions to create similarity matrices and distance clusters to then be visualized with `pheatmap`
 
@@ -256,8 +256,16 @@ information_content <- descendants_IC(hpo)
            fontsize = 6.5
            )
 
+```
 
-## DISEASE CLUSTERS HEATMAP!
+## Disease Clusters
+
+Data analysis and visualizations based on 'disease_id' in 'loci' data
+
+```{r}
+#| label: Similarity matrices, cluster dendrograms, heat maps, and histograms of disease_id data
+
+## DISEASE CLUSTERS HEATMAP! + similarity matrix and cluster dendrogram
 library(jsonlite)
 library(tidyverse)
 url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
@@ -269,7 +277,7 @@ data(hpo)
 set.seed(50)
 information_content <- descendants_IC(hpo)
 library(pheatmap)
-  # Generate terms (used 'str_view(disease_hpo$hpo_id[])' to copy    HPO terms) --> Similarity matrix --> Heat map
+  # Generate terms (used 'str_view(disease_hpo$hpo_id[])' to copy HPO terms) --> Similarity matrix --> Heat map
   term_set <- list(
   OPDM5 = c("HP:0000183", "HP:0000218", "HP:0000301", "HP:0000408", "HP:0000590", "HP:0000597", "HP:0001284", "HP:0001288", "HP:0001604", "HP:0001824", "HP:0002058", "HP:0002091", "HP:0002100", "HP:0002505", "HP:0002705", "HP:0002747", "HP:0007149", "HP:0007838", "HP:0008376", "HP:0008756", "HP:0008944", "HP:0008959", "HP:0008963", "HP:0008997", "HP:0009027", "HP:0009053", "HP:0009063", "HP:0009073", "HP:0010550", "HP:0030192", "HP:0030319", "HP:0031162", "HP:0200136", "HP:0430015", "HP:3000005", "HP:3000010"),
   FRAXE = c("HP:0000252", "HP:0000256", "HP:0000286", "HP:0000426", "HP:0000713", "HP:0000718", "HP:0000722", "HP:0000729", "HP:0000750", "HP:0000752", "HP:0001249", "HP:0001328", "HP:0001511", "HP:0001609", "HP:0002311", "HP:0002312", "HP:0004209", "HP:0004322", "HP:0009904", "HP:0011341", "HP:0012172", "HP:0012471", "HP:0025116", "HP:0100023", "HP:0100710"),
@@ -363,6 +371,26 @@ library(pheatmap)
            show_colnames = TRUE,
            fontsize = 6.5
   )
+  
+## Histogram of HPO term frequency per disease
+# Load packages and tidy data
+library(jsonlite)
+library(tidyverse)
+url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
+loci <- fromJSON(url)
+disease_hpo <- loci |> select(c(disease_id, hpo_terms)) |> unnest_longer(hpo_terms) |> mutate(hpo_id = str_extract(hpo_terms, "^HP:\\d+")) |> select(disease_id, hpo_id) |> group_by(disease_id) |> nest(hpo_id = hpo_id) |> rowwise() |> mutate(hpo_id = paste(hpo_id, collapse = ', ')) |> ungroup(
+)
+# Function for HPO count column
+count_hpo <- function(x) {
+  result <- length(strsplit(disease_hpo$hpo_id, ",")[[x]])
+  return(result)
+}
+# Create 'hpo_count' column
+disease_hpo <- mutate(disease_hpo, hpo_count = c(count_hpo(1), count_hpo(2), count_hpo(3), count_hpo(4), count_hpo(5), count_hpo(6), count_hpo(7), count_hpo(8), count_hpo(9), count_hpo(10), count_hpo(11), count_hpo(12), count_hpo(13), count_hpo(14), count_hpo(15), count_hpo(16), count_hpo(17), count_hpo(18), count_hpo(19), count_hpo(20), count_hpo(21), count_hpo(22), count_hpo(23), count_hpo(24), count_hpo(25), count_hpo(26), count_hpo(27), count_hpo(28), count_hpo(29), count_hpo(30), count_hpo(31), count_hpo(32), count_hpo(33), count_hpo(34), count_hpo(35), count_hpo(36), count_hpo(37), count_hpo(38), count_hpo(39), count_hpo(40), count_hpo(41), count_hpo(42), count_hpo(43), count_hpo(44), count_hpo(45), count_hpo(46), count_hpo(47), count_hpo(48), count_hpo(49), count_hpo(50), count_hpo(51), count_hpo(52), count_hpo(53), count_hpo(54), count_hpo(55), count_hpo(56), count_hpo(57), count_hpo(58), count_hpo(59), count_hpo(60), count_hpo(61), count_hpo(62), count_hpo(63), count_hpo(64), count_hpo(65), count_hpo(66), count_hpo(67), count_hpo(68), count_hpo(69), count_hpo(70), count_hpo(71), count_hpo(72))
+) |> arrange(desc(hpo_count))
+# hpo_count histogram
+ggplot(disease_hpo, aes(x = reorder(disease_id, -hpo_count), y = hpo_count)) + geom_col(fill = "lightgreen") + theme(axis.text.x = element_text(angle = 70, hjust = 1, vjust = 1)) + labs(title = "Number of HPO Terms by Disease ID", x = "Disease ID", y = "Number of HPO Terms"
+)
 ```
 
 
