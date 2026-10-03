@@ -423,7 +423,7 @@ library(tidyverse)
 url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
 loci <- fromJSON(url)
   # Select 'mondo' and 'omim' columns from `loci` data to make input easy
-  loci_disease <- loci |> select(disease_id, mondo, omim)
+  loci_disease <- loci |> select(disease_id, disease, mondo, omim)
   # Create Node Hierarchy to examine correlation between diseases
     # Ex: "MONDO:0007698 hand-foot-genital syndrome" and "MONDO:0008513 synpolydactylyl type 1" nodes
   monarch <- monarch_engine()
@@ -432,6 +432,103 @@ loci <- fromJSON(url)
     expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
     expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
   plot(hierarchy)
+
+## FIRST DISEASES CLUSTERS DRAFT  
+# Cluster 1: DBQD2_BSS and CCD --> Osteochondrodysplasia
+monarch <- monarch_engine()
+cluster1 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0014343", "MONDO:0007340")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster1)
+
+#Cluster 2: DBQD2_BSS, CCD, and RCPS --> Skeletal Dysplasia
+monarch <- monarch_engine()
+cluster2 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0014343", "MONDO:0007340", "MONDO:0009998")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster2)
+
+#Cluster 2.1: CCD and RCPS --> Skeletal Dysplasia
+monarch <- monarch_engine()
+cluster2.1 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0007340", "MONDO:0009998")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster2.1)
+
+#Cluster 2.2: DBQD2_BSS and RCPS --> Skeletal Dysplasia
+monarch <- monarch_engine()
+cluster2.2 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0014343", "MONDO:0009998")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster2.2)
+
+#Cluster 3: DBQD2_BSS, CCD, RCPS, and EDM1_PSACH --> Skeletal Dysplasia
+monarch <- monarch_engine()
+cluster3 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0014343", "MONDO:0007340", "MONDO:0009998", "MONDO:0008322", "MONDO:0007561")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster3)
+
+#Cluster 3.1: RCPS and EDM1_PSACH --> Skeletal Dysplasia
+monarch <- monarch_engine()
+cluster3.1 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0009998", "MONDO:0008322", "MONDO:0007561")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster3.1)
+
+#Cluster 4: HFGs and SD5 --> Bone Disorder
+monarch <- monarch_engine()
+cluster4 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0007698", "MONDO:0008513")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster4)
+
+#Cluster 5: DBQD2_BSS, CCD, RCPS, EDM1_PSACH, HFGs, and SD5 --> Bone Disorder
+monarch <- monarch_engine()
+cluster5 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0014343", "MONDO:0007340", "MONDO:0009998", "MONDO:0008322", "MONDO:0007561", "MONDO:0007698", "MONDO:0008513")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster5)  
+
+#Cluster 6: DBQD2_BSS, CCD, RCPS, EDM1_PSACH, HFGs, SD5, and VACTERLX --> Disease by Body System or Component
+monarch <- monarch_engine()
+cluster6 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0014343", "MONDO:0007340", "MONDO:0009998", "MONDO:0008322", "MONDO:0007561", "MONDO:0007698", "MONDO:0008513", "MONDO:0010752")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster6) 
+
+#Cluster 6.1: HFGs, SD5, and VACTERLX --> Disease by Body System or Component
+monarch <- monarch_engine()
+cluster6.1 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0007698", "MONDO:0008513", "MONDO:0010752")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster6.1) 
+
+#Cluster 6.1.1: HFGs and VACTERLX --> Syndromic Disease
+monarch <- monarch_engine()
+cluster6.1.1 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0007698", "MONDO:0010752")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster6.1.1) 
+
+#Cluster 6.2: EDM1_PSACH and VACTERLX --> Hereditary Disease
+monarch <- monarch_engine()
+cluster6.2 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0008322", "MONDO:0007561", "MONDO:0010752")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster6.2) 
 
 
    
