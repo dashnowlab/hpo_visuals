@@ -1,4 +1,4 @@
-## Drafting for Final Quarto File
+## Drafting Disease Clusters for Final Quarto File
 library(jsonlite)
 library(tidyverse)
 
@@ -125,4 +125,46 @@ pheatmap(sim_mat,
          show_colnames = TRUE,
          fontsize = 6.5
 )
+
+
+
+## DISEASE CLUSTERS w/ MONARCHR
+library(monarchr)
+library(jsonlite)
+library(tidyverse)
+url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/refs/heads/split_disease/data/STRchive-loci.json"
+loci <- fromJSON(url)
+# Select 'mondo' and 'omim' columns from `loci` data to make input easy
+loci_disease <- loci |> select(disease_id, disease, mondo, orphanet)
+
+# FAME Cluster: FAME8, FAME7, FAME6, FAME2, FAME4, FAME3, FAME1 --> Epilepsy (familial adult myoclonic), Hereditary Neurological Disease, Myoclonic Epilepsy
+  # Excluded FAME8 because does not have MONDO ID
+monarch <- monarch_engine()
+cluster_fame <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0054847", "MONDO:0054846", "MONDO:0011930", "MONDO:0014055", "MONDO:0013322", "MONDO:0010985")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster_fame)
+  #FAME Cluster 2: FAME8, FAME7, FAME6, FAME2, FAME4, FAME3, FAME1, ETM6, XDP --> Hereditary Neurological Disease
+    # Excluded FAME8 because does not have MONDO ID
+  cluster_fame_2 <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0054847", "MONDO:0054846", "MONDO:0011930", "MONDO:0014055", "MONDO:0013322", "MONDO:0010985", "MONDO:0030027", "MONDO:0010747")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_fame_2)
+  #FAME Cluster 2: ETM6, XDP --> Hereditary Neurological Disease, Movement Disorder
+  cluster_fame_3 <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0030027", "MONDO:0010747")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_fame_3)
+  
+# SCA Cluster: SCA7, SCA51, SCA36, SCA31, SCA37, SCA3_MJD, SCA1, SCA2, SCA6, SCA27B, DRPLA, SCA12, SCA17  --> Autosomal Dominant Cerebellar Ataxia
+monarch <- monarch_engine()
+cluster_sca <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0016163", "MONDO:0975800", "MONDO:0013594", "MONDO:0007296", "MONDO:0014410", "MONDO:0007182", "MONDO:0008119", "MONDO:0008458", "MONDO:0008457", "MONDO:0859340", "MONDO:0007435", "MONDO:0011439", "MONDO:0011781")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster_sca)
+
 
