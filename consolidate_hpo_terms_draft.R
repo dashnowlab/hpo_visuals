@@ -433,7 +433,7 @@ loci <- fromJSON(url)
     expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
   plot(hierarchy)
 
-## FIRST DISEASES CLUSTERS DRAFT  
+## **NOT UPDATED HPO DATA** FIRST DISEASES CLUSTERS DRAFT  
 # Cluster 1: DBQD2_BSS and CCD --> Osteochondrodysplasia
 monarch <- monarch_engine()
 cluster1 <- monarch |> 
@@ -535,7 +535,7 @@ plot(cluster6.2)
 
 
 
-## UPDATING HPO DATA --> Cluster dendrogram, Heat map, Histrogram
+## UPDATING HPO DATA --> Cluster dendrogram, Heat map, Histogram
 library(jsonlite)
 library(tidyverse)
 url2 <- "https://raw.githubusercontent.com/dashnowlab/STRchive/refs/heads/mondo/data/STRchive-loci.json"
@@ -652,7 +652,7 @@ pheatmap(sim_mat,
 ## UPDATED Histogram of HPO term frequency per disease
 library(jsonlite)
 library(tidyverse)
-url2 <- "https://raw.githubusercontent.com/dashnowlab/STRchive/refs/heads/mondo/data/STRchive-loci.json"
+url2 <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
 loci2 <- fromJSON(url2)
 disease_hpo2 <- loci2 |> select(c(disease_id, hpo_terms)) |> unnest_longer(hpo_terms) |> mutate(hpo_id = str_extract(hpo_terms, "^HP:\\d+")) |> select(disease_id, hpo_id) |> group_by(disease_id) |> nest(hpo_id = hpo_id) |> rowwise() |> mutate(hpo_id = paste(hpo_id, collapse = ', ')) |> ungroup()
 # Function for HPO count column
@@ -666,3 +666,125 @@ disease_hpo2 <- mutate(disease_hpo2, hpo_count = c(count_hpo(1), count_hpo(2), c
 # hpo_count histogram
 ggplot(disease_hpo2, aes(x = reorder(disease_id, -hpo_count), y = hpo_count)) + geom_col(fill = "lightgreen") + theme(axis.text.x = element_text(angle = 70, hjust = 1, vjust = 1)) + labs(title = "Number of HPO Terms by Disease ID", x = "Disease ID", y = "Number of HPO Terms"
 )
+
+
+## **UPDATED HPO DATA** DISEASES CLUSTERS DRAFT
+library(monarchr)
+library(jsonlite)
+library(tidyverse)
+url <- "https://raw.githubusercontent.com/dashnowlab/STRchive/main/data/STRchive-loci.json"
+loci <- fromJSON(url)
+# Select 'mondo' and 'omim' columns from `loci` data to make input easy
+loci_disease <- loci |> select(disease_id, disease, mondo, orphanet)
+
+# Cluster 1: MODY8, FECD3, and CHNG3 --> Hereditary Disease (all), Endocrine System Disorder (MODY8 and CHNG3)
+monarch <- monarch_engine()
+cluster1 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0012348", "MONDO:0013203", "MONDO:0012360")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster1)
+  # MODY8 and CHNG3 --> Endocrine System Disorder, Hereditary Disease
+  cluster_mc <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0012348", "MONDO:0012360")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_mc)
+  # FECD3 and CHNG3 --> Hereditary Disease
+  cluster_fc <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0013203", "MONDO:0012360")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_fc)
+  # MODY8 and FECD3 --> Hereditary Disease
+  cluster_mf <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0012348", "MONDO:0013203")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_mf)
+  
+# Cluster 2: HDL2, HD, CJD, FTDALS1, ALS, and NME --> Central Nervous System Disorder (all), Hereditary Neurological Disease (HDL2, HD, CJD, NME)
+  #Removed "MONDO:0004976" from FTDALS1 to simplify plot
+monarch <- monarch_engine()
+cluster2 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739", "MONDO:0007403", "MONDO:0007656", "MONDO:0007105", "MONDO:0020781")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster2)
+  #HDL2 and HD --> Huntington Disease
+  cluster_hd <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_hd)
+  #HDL2, HD, and CJD --> Hereditary Neurological Disease, Central Nervous System Disorder
+  cluster_hdcjd <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739", "MONDO:0007403", "MONDO:0007656")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_hdcjd)
+  #HDL2, HD, CJD, and FTDALS1 --> Central Nervous System Disorder
+    #Removed "MONDO:0004976" from FTDALS1 to simplify plot
+  cluster_hcf <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739", "MONDO:0007403", "MONDO:0007656", "MONDO:0007105")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_hcf)
+  #HDL2, HD and FTDALS1 --> Neurodegenerative Disease 
+    #Removed "MONDO:0004976" from FTDALS1 to simplify plot
+  cluster_hf <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739", "MONDO:0007105")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_hf)
+  #CJD and FTDALS1 --> Central Nervous System Disorder 
+    #Removed "MONDO:0004976" from FTDALS1 to simplify plot
+  cluster_cf <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0007403", "MONDO:0007656", "MONDO:0007105")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_cf)
+  #HDL2, HD, CJD, FTDALS1, and ALS --> Central Nervous System Disorder
+    #Removed "MONDO:0004976" from FTDALS1 and ALS to simplify plot
+  cluster_hcfa <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739", "MONDO:0007403", "MONDO:0007656", "MONDO:0007105")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_hcfa)
+  #FTDALS1, ALS, and NME --> Inherited Neurodegenerative Disorder
+    #Removed "MONDO:0004976" from FTDALS1 and ALS to simplify plot
+  cluster_an <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0007105", "MONDO:0020781")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_an)
+  #HDL2, HD, CJD, and NME --> Hereditary Neurological Disease, Central Nervous System Disorder
+  cluster_hcn <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:011671", "MONDO:0007739", "MONDO:0007403", "MONDO:0007656", "MONDO:0020781")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_hcn)
+  
+# Cluster 3: FXS_FXTAS_POF1, EIEE1, PRTS --> 
+monarch <- monarch_engine()
+cluster3 <- monarch |> 
+  fetch_nodes(query_ids = c("MONDO:0010383", "MONDO:0010706", "MONDO:0010382", "MONDO:0010632", "MONDO:0010654")) |>
+  expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+  expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+plot(cluster3)
+  #FXS_FXTAS_POF1 --> Hereditary Disease / X-linked Disease
+  clusterfxp <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0010383", "MONDO:0010706", "MONDO:0010382")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(clusterfxp) 
+  #FXS_FXTAS_POF1, EIEE1 -->
+  clusterfxpe <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0010383", "MONDO:0010706", "MONDO:0010382", "MONDO:0010632")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(clusterfxpe) 
+ 
+
+
+  
