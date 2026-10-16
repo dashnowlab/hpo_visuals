@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 *.pdf
+disease_cluster_heatmap_updated.png
+disease_cluster_heatmap_old.png
+disease_cluster_dendrogram_updated.png
+disease_cluster_dendrogram_old_annotated.png
+disease_cluster_dendrogram_old.png
+disease_cluster_dendrogram_final.png
