@@ -203,6 +203,12 @@ plot(cluster_sca)
     expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
     expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
   plot(cluster_sca_6)
+  #SCA Cluster 7: FXTAS, SCA10, SCA8 --> Hereditary Cerebellar Ataxia
+  cluster_sca_7 <- monarch |> 
+    fetch_nodes(query_ids = c("MONDO:0010382", "MONDO:0011330", "MONDO:0012116")) |>
+    expand(predicates = "biolink:subclass_of", direction = "in", transitive = TRUE) |>
+    expand(predicates = "biolink:subclass_of", direction = "out", transitive = TRUE, categories = "biolink:Disease")
+  plot(cluster_sca_7)
   
 # OPDM Cluster: OPML1, OPDM1, OPDM4, OPDM5, OPDM, OPDM2, OPMD, CPEO, NIID, OPDM3 --> Hereditary skeletal muscle disorder
 monarch <- monarch_engine()
