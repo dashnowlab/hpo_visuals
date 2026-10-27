@@ -213,9 +213,15 @@
           #Tremor
             #Action tremor
       #Gait disturbance
+      #Abnormal central motor function
+        #Abnormality of coordination
+          #Ataxia
     #Abnormality of the eye
       #Abnormality of eye physiology
         #Abnormal eye movement
+    #Abnornality of mental function
+      #Abnormal speech or vocalization
+        #Dysarthria
   
   #Right Middle SCA (a=SCA3_MJD, b=SCA1, c=SCA2)
   r_middle_sca <- list(
